@@ -38,16 +38,12 @@ N = 2000;
 H = tf(0.1,[1 -0.9],Tp);
 
 
+
 sigm2 = 0.64; % musi być z przedziału <0.64; 1.0>
 sigm = sqrt(sigm2);
 
-n = 1:2000;
-tn = n*Tp;
-
 e = sigm*randn(1, N);
 x = skakanka(N, Tp);
-y = pociag(N, Tp, e);
-v = lsim(H,e,tn);
 
 
 function x = skakanka(n, tp)
@@ -58,6 +54,5 @@ end
 
 function y = pociag(n, tp, e)
     for i=1:n
-        y(i) = sin(2*pi*5*i*tp) + e(i);
-    end
+        y(i) = sin
 end
