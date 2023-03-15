@@ -1,6 +1,6 @@
 close all; clear; clc;
 
-%% wczytywanie danych + usunięcie pierwszego głupiego wiersza 
+%% wczytywanie danych + usunięcie pierwszego wiersza 
 dane = importdata("StochasticProcess.mat");
 lp = dane(1,:);
 dane(1,:) = [];
@@ -14,14 +14,14 @@ end
 
 %% obliczanie estymat po realizacjach
 m_n_daszek = 1/size(dane, 2)*sum(dane, 1);
-%o2_n_daszek = 1/size(dane, 2)*(sum(dane, 1)-m_n_daszek).^2; %to jest do wykuriwenia chyba
+%o2_n_daszek = 1/size(dane, 2)*(sum(dane, 1)-m_n_daszek).^2; %to jest do wywalenia chyba
 o2_n_daszek = 1/size(dane, 2)*sum((dane - m_n_daszek).^2, 1); %to jest lepsza wersja tego samego co wyzej
 
 %% obliczanie estymat po czasie
 m_daszek = 1/size(dane, 1)*sum(dane, 2);
 o2_daszek = 1/size(dane, 1)*sum((dane - m_daszek).^2, 2);
 
-%% wykresy - chuj wie czy dobrze w kazdym razie są tak jak w poleceniu
+%% wykresy - niewiem czy dobrze w kazdym razie są tak jak w poleceniu
 figure(222)
 plot(dane(1,:),m_n_daszek,'r.')
 hold on;
@@ -178,7 +178,7 @@ title('Ryx')
 
 function x = skakanka(n, tp)
     for i=1:n
-        x(i) = sin(2*pi*5*i*tp); % tu ta 5 można wykurwić aby ładniejsze wykresy robiły sie
+        x(i) = sin(2*pi*5*i*tp); % tu ta 5 można wywalić aby ładniejsze wykresy robiły sie
     end
 end
 
