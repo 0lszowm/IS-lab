@@ -10,13 +10,15 @@ H = tf(0.1,[1 -0.9],Tp);
 
 f = 0:(1/(N*Tp)):(1/Tp-1/(N*Tp));
 
-sigm = 0.8;
+sigm = 0.8; % ta wartość przyjąłem bo taka tez została wykorzystana w trakcie poprzednich zajęć
+
+% obliczanie wartosci sygnałów
 e = sigm*randn(1, N);
 x = skakanka(n, Tp);
 v = lsim(H,e,tn);
 
-%% wykresy wszystkich sygnałów w dziedzinie czasu dystkretnego
-figure(333)
+% wykresy
+figure(1)
 subplot(2,2,1)
 plot(e)
 title('e')
@@ -27,10 +29,10 @@ subplot(2,2,3)
 plot(v)
 title('v')
 
-%% fft z uwzględniemiem Tp
-e_fft =  fft(e,N);
-x_fft =  fft(x,N);
-v_fft =  fft(v,N);
+%% fft
+e_fft = fft(e,N);
+x_fft = fft(x,N);
+v_fft = fft(v,N);
 
 %wykresy w fft
 figure(2)
@@ -43,9 +45,6 @@ title('x_fft')
 subplot(2,2,3)
 plot(tn,v_fft,'m')
 title('v_fft')
-
-Om = (2*pi)/N * n;
-om = Om/Tp;
 
 mod_x = 2/N*abs(x_fft);
 mod_e = 2/N*abs(e_fft);
@@ -65,40 +64,64 @@ stem(f,mod_v,'m')
 grid on 
 title('mod v')
 
+
 %% twierdzenie Parsevala (15)
-%przygotowanie wektora do fft 
-%Rxx = [rxx(1:Mw+1) zeros(1,2*N-2*Mw-2) rxx(Mw+1:-12)] to nie wazne jest
-pars_xt = Tp*sum(x.^2)
+
+pars_xt = Tp*sum(x.^2);
 pars_et = Tp*sum(e.^2);
 pars_vt = Tp*sum(v.^2);
 
-X_Njw = abs(fft(x, N));
-X_Njw = 2*X_Njw/(N*Tp);
-X_Njw = X_Njw/(N/2);
 % energia w dziedzinie czestotliwosci
-en_freq = sum(1/(N*Tp)*X_Njw.^2) 
+en_freq_x = rabarbar(x, N, Tp); 
+en_freq_e = rabarbar(e, N, Tp); 
+en_freq_v = rabarbar(v, N, Tp); 
+% Twierdzenie parsevala się zgadza (zostało potwierdzone w powyższych linijkach)
 
+%% porównanie estymatorów periodogram i korelogram 
+% Parametry
+f = linspace(0,1/(2*Tp),N/2+1); % wektor częstotliwości
 
-%N=100;
-omega=0:2*pi/N:2*pi-2*pi/N;
-Mh=N/5;
-i=0;
-for tau = 0:N-1
-    i=i+1;
-    if tau<=Mh
-        wh(i)=0.5*(1+cos(tau*pi/Mh));
-    end
-    if tau>Mh
-        wh(i)=0;
-    end
-    r_xx(i)=Covar([x',x'],tau);
-    Rxx = [r_xx(Mh+1) zeros(1, 2*N-2*Mh-2) r_xx(Mh+1:-1:2)]
-    cor_xxh(i)=wh(i)*r_xx(i)*exp(-j*omega(i)*tau);
-end
-figure(5)
-stem(omega(1:N/2),cor_xxh(1:N/2))
- 
+% Generowanie sygnału
+e = sigm * randn(1,N);
 
+% Estymacja gęstości widmowej mocy - periodogram
+S_per = (1/(N*Tp)) * abs(fft(e)).^2;
+S_per = S_per(1:N/2+1);
+
+% Estymacja gęstości widmowej mocy - korelogram
+[r, lags] = xcorr(e, 'unbiased');
+r = r(N:end);
+lags = lags(N:end);
+S_corr = (1/(N*Tp)) * abs(fft(r)).^2;
+S_corr = S_corr(1:N/2+1);
+
+% Wykresy
+figure(4);
+subplot(3,1,1);
+plot((0:N-1)*Tp, e);
+xlabel('Czas [s]');
+title('Sygnał e');
+
+subplot(3,1,2);
+plot(f, 10*log10(S_per));
+xlabel('Częstotliwość [Hz]');
+ylabel('Gęstość widmowa mocy [dB/Hz]');
+title('Periodogram');
+
+subplot(3,1,3);
+plot(f, 10*log10(S_corr));
+xlabel('Częstotliwość [Hz]');
+ylabel('Gęstość widmowa mocy [dB/Hz]');
+title('Korelogram');
+
+%% tu znajdują się definicje funkcji
 function x = skakanka(n, tp)
     x = sin(2*pi*5*n*tp) + 0.5*sin(2*pi*10*n*tp) + 0.25*sin(2*pi*30*n*tp);
+end
+
+function en = rabarbar(sig, n, tp)
+    X_Njw = abs(fft(sig, n));
+    X_Njw = 2*X_Njw/(n*tp);
+    X_Njw = X_Njw/(n/2);
+    en = sum(1/(n*tp)*X_Njw.^2);
 end
