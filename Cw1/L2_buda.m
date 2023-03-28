@@ -81,81 +81,73 @@ en_freq_v = rabarbar(v, N, Tp);
 % Parametry
 f = linspace(0,1/(2*Tp),N/2+1); % wektor częstotliwości
 
-baton(0.8, N, Tp, f, 4)
-baton(1, N, Tp, f, 5)
+baton_prawidlowy(e, Tp, N, 4)
+baton(e, N, Tp, f, 5)
+% badanie zmiany sigm na estymate
+sigm = 1; 
+e = sigm*randn(1, N);
+baton_prawidlowy(e, Tp, N, 6)
+baton(e, N, Tp, f, 7)
 
-szambo(100, e, 6, Tp)
-szambo(2000, e, 7, Tp) %% tutaj jest to co nizej dla sygnalu e
+okno = N/5;
+szambo(e, N, Tp, f, okno, 8)
+okno = N;
+szambo(e, N, Tp, f, okno, 9)
+okno = N/20;
+szambo(e, N, Tp, f, okno, 10)
 
-ork(v, N, Tp, 8, f)
+% to jest do ostatniej kropki
+baton_prawidlowy(v, Tp, N, 11)
+baton(v', N, Tp, f, 12)
+
+
 
 
 %% tu znajdują się definicje funkcji
 
-function szambo(N, e, img, Tp)
-%okno i wykreślona estymata gęstości widmowej mocy
-%N=100;
-omega=0:2*pi/N:2*2*pi-2*pi/N;
-Mh=N/5;
-i=0;
-for tau = -(N-1):N-1
-    i=i+1;
-    if tau<=Mh
-        wh(i)=0.5*(1+cos(tau*pi/Mh));
-    end
-    if tau>Mh
-        wh(i)=0;
-    end
-    r_xx(i)=Covar([e',e'],tau);
-    cor_xxh(i)=wh(i)*r_xx(i)*exp(-1j*omega(i)*tau);
-end
-figure(img)
-stem(omega(1:N/2),cor_xxh(1:N/2))
-end
+function baton_prawidlowy(sig, Tp, N, nr)
+    Fs = 1/Tp;
+    [pee, fp] = periodogram(sig, [], [], Fs);
 
+    [peek, fpk] = pwelch(sig, [], [], [], Fs);
+    % Wykresy
+    figure(nr);
+    subplot(3,1,1);
+    plot((0:N-1)*Tp, sig);
+    title('Sygnał e');
 
-function ork(v, N, Tp, img, f)
-    % Estymacja gęstości widmowej mocy - korelogram
-    for i = 1:4000
-        r(i) = Covar([v v],i-1);
-    end
-    mw = 2;
-    Ree = [r(1:mw+1)*1 zeros(1, 2*N-2*mw-2) r(mw+1:-1:2)]
-    S_corr = (1/(N*Tp)) * (2/N)*abs(fft(Ree)).^2;
-    figure(img)
-    plot(S_corr);
+    subplot(3,1,2);
+    stem(fp, pee);
+    xlabel('Częstotliwość [Hz]');
+    ylabel('Gęstość widmowa mocy');
+    title('Periodogram');
+
+    subplot(3,1,3);
+    stem(fpk, peek);
     xlabel('Częstotliwość [Hz]');
     ylabel('Gęstość widmowa mocy');
     title('Korelogram');
 end
 
-function baton(sigm, N, Tp, f, i)
-    % Generowanie sygnału
-    e = sigm * randn(1,N);
-
+function baton(sig, N, Tp, f, img)
+    f2 = linspace(0, 500, 2000);
     % Estymacja gęstości widmowej mocy - periodogram
-    fft_e=2*abs(fft(e))/N;
+    fft_e=2*abs(fft(sig))/N; % to git
     S_per = (1/(N*Tp)) * fft_e.^2;
     S_per = S_per(1:N/2+1);
 
-    % Estymacja gęstości widmowej mocy - korelogram
-    [r, lags] = xcorr(e, 'unbiased');
-    r = r(N:end);
-    lags = lags(N:end);
-    S_corr = (1/(N*Tp)) * (2/N)*abs(fft(r)).^2;
-    S_corr = S_corr(1:N/2+1);
-
-    for i = 1:500
-        r(i) = Covar([e' e'],i-1);
+    % Estymacja gęstości widmowej mocy - korelogramowa
+    for i = 0:N-1
+        r(i+1) = Covar([sig' sig'], i);
     end
-    mw = 200;
-    Ree = [r(1:mw+1)*1 zeros(1, 2*N-2*mw-2) r(mw+1:-1:2)]
-    S_corr = (1/(N*Tp)) * (2/N)*abs(fft(Ree)).^2;
+    mw = N/5;
+    Ree = [r(1:mw+1)*1 zeros(1, 2*N-2*mw-2) r(mw+1:-1:2)];
+    S_corr = (2/N)*abs(fft(Ree));
 
     % Wykresy
-    figure(i);
+    figure(img);
     subplot(3,1,1);
-    plot((0:N-1)*Tp, e);
+    plot((0:N-1)*Tp, sig);
     xlabel('Czas [s]');
     title('Sygnał e');
 
@@ -166,7 +158,46 @@ function baton(sigm, N, Tp, f, i)
     title('Periodogram');
 
     subplot(3,1,3);
-    stem(S_corr);
+    %stem(S_corr); % tutaj odbija sie okno wiec komentarz daje
+    stem(f2, S_corr(1:N)); % tutaj bez odbicia wiec elegancko
+    xlabel('Częstotliwość [Hz]');
+    ylabel('Gęstość widmowa mocy');
+    title('Korelogram');
+end
+
+function szambo(sig, N, Tp, f, win, img)
+    % ta funckja to tak naprawde to samo co baton tylko ze z mozliwoscia
+    % zmiany okna :)
+    f2 = linspace(0, 500, 2000);
+    % Estymacja gęstości widmowej mocy - periodogram
+    fft_e=2*abs(fft(sig))/N; % to git
+    S_per = (1/(N*Tp)) * fft_e.^2;
+    S_per = S_per(1:N/2+1);
+
+    % Estymacja gęstości widmowej mocy - korelogramowa
+    for i = 0:N
+        r(i+1) = Covar([sig' sig'], i);
+    end
+    mw = win;
+    Ree = [r(1:mw+1)*1 zeros(1, 2*N-2*mw-2) r(mw+1:-1:2)];
+    S_corr = (2/N)*abs(fft(Ree));
+
+    % Wykresy
+    figure(img);
+    subplot(3,1,1);
+    plot((0:N-1)*Tp, sig);
+    xlabel('Czas [s]');
+    title('Sygnał e');
+
+    subplot(3,1,2);
+    stem(f, S_per);
+    xlabel('Częstotliwość [Hz]');
+    ylabel('Gęstość widmowa mocy');
+    title('Periodogram');
+
+    subplot(3,1,3);
+    %stem(S_corr); % tutaj odbija sie okno wiec komentarz daje
+    stem(f2, S_corr(1:N)); % tutaj bez odbicia wiec elegancko
     xlabel('Częstotliwość [Hz]');
     ylabel('Gęstość widmowa mocy');
     title('Korelogram');
