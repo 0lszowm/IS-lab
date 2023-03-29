@@ -1,6 +1,6 @@
 close all; clear; clc;
 
-%% dane
+% dane
 Tp = 0.001;
 N = 2000; 
 n = 0:N-1; 
@@ -81,31 +81,32 @@ en_freq_v = rabarbar(v, N, Tp);
 % Parametry
 f = linspace(0,1/(2*Tp),N/2+1); % wektor częstotliwości
 
-baton_prawidlowy(e, Tp, N, 4)
-baton(e, N, Tp, f, 5)
+%estym_prawidlowe(e, Tp, N, 4)
+estym(e, N, Tp, f, 5)
 % badanie zmiany sigm na estymate
 sigm = 1; 
 e = sigm*randn(1, N);
-baton_prawidlowy(e, Tp, N, 6)
-baton(e, N, Tp, f, 7)
-
+%estym_prawidlowe(e, Tp, N, 6)
+estym(e, N, Tp, f, 7)
+%% porównanie wpływu okna
 okno = N/5;
-szambo(e, N, Tp, f, okno, 8)
+estym_okno(e, N, Tp, f, okno, 8)
 okno = N;
-szambo(e, N, Tp, f, okno, 9)
-okno = N/20;
-szambo(e, N, Tp, f, okno, 10)
+estym_okno(e, N, Tp, f, okno, 9)
+okno = N/25;
+estym_okno(e, N, Tp, f, okno, 10)
 
-% to jest do ostatniej kropki
-baton_prawidlowy(v, Tp, N, 11)
-baton(v', N, Tp, f, 12)
+%% to jest do ostatniej kropki
+%estym_prawidlowe(v, Tp, N, 11)
+estym(v', N, Tp, f, 12)
 
 
 
 
 %% tu znajdują się definicje funkcji
 
-function baton_prawidlowy(sig, Tp, N, nr)
+function estym_prawidlowe(sig, Tp, N, nr)
+    % tutaj wszystko sie liczy gotowymi funkcjami matlab
     Fs = 1/Tp;
     [pee, fp] = periodogram(sig, [], [], Fs);
 
@@ -129,15 +130,21 @@ function baton_prawidlowy(sig, Tp, N, nr)
     title('Korelogram');
 end
 
-function baton(sig, N, Tp, f, img)
+function estym(sig, N, Tp, f, img)
+    % tu sie liczy gotowymi funkcjami w matlabie by porownac
+    Fs = 1/Tp;
+    [pee, fp] = periodogram(sig, [], [], Fs);
+    [peek, fpk] = pwelch(sig, [], [], [], Fs);
+    
+    % od tego momentu bez gotowych funkcji sie liczy
     f2 = linspace(0, 500, 2000);
     % Estymacja gęstości widmowej mocy - periodogram
     fft_e=2*abs(fft(sig))/N; % to git
     S_per = (1/(N*Tp)) * fft_e.^2;
-    S_per = S_per(1:N/2+1);
+    %S_per = (1/(Tp*length(fft_e))) * fft_e.^2;
 
     % Estymacja gęstości widmowej mocy - korelogramowa
-    for i = 0:N-1
+    for i = 0:N
         r(i+1) = Covar([sig' sig'], i);
     end
     mw = N/5;
@@ -146,33 +153,45 @@ function baton(sig, N, Tp, f, img)
 
     % Wykresy
     figure(img);
-    subplot(3,1,1);
+    subplot(3,2,1:2);
     plot((0:N-1)*Tp, sig);
     xlabel('Czas [s]');
     title('Sygnał e');
 
-    subplot(3,1,2);
-    stem(f, S_per);
+    subplot(3,2,3);
+    stem(fp, pee);
     xlabel('Częstotliwość [Hz]');
     ylabel('Gęstość widmowa mocy');
     title('Periodogram');
 
-    subplot(3,1,3);
+    subplot(3,2,4);
+    stem(fpk, peek);
+    xlabel('Częstotliwość [Hz]');
+    ylabel('Gęstość widmowa mocy');
+    title('Korelogram');
+
+    subplot(3,2,5);
+    %stem(S_per(1:N)) % a tutaj z odbiciem sie rysuje
+    stem(f, 2*S_per(1:N/2+1)); % tutaj bez odbicia i mnozone x2 dlatego
+    xlabel('Częstotliwość [Hz]');
+    ylabel('Gęstość widmowa mocy');
+    title('Periodogram');
+
+    subplot(3,2,6);
     %stem(S_corr); % tutaj odbija sie okno wiec komentarz daje
-    stem(f2, S_corr(1:N)); % tutaj bez odbicia wiec elegancko
+    stem(f2, 2*S_corr(1:N)); % tutaj bez odbicia wiec elegancko i mnozone x2 dlatego
     xlabel('Częstotliwość [Hz]');
     ylabel('Gęstość widmowa mocy');
     title('Korelogram');
 end
 
-function szambo(sig, N, Tp, f, win, img)
+function estym_okno(sig, N, Tp, f, win, img)
     % ta funckja to tak naprawde to samo co baton tylko ze z mozliwoscia
     % zmiany okna :)
     f2 = linspace(0, 500, 2000);
     % Estymacja gęstości widmowej mocy - periodogram
     fft_e=2*abs(fft(sig))/N; % to git
     S_per = (1/(N*Tp)) * fft_e.^2;
-    S_per = S_per(1:N/2+1);
 
     % Estymacja gęstości widmowej mocy - korelogramowa
     for i = 0:N
@@ -182,22 +201,40 @@ function szambo(sig, N, Tp, f, win, img)
     Ree = [r(1:mw+1)*1 zeros(1, 2*N-2*mw-2) r(mw+1:-1:2)];
     S_corr = (2/N)*abs(fft(Ree));
 
+    Fs = 1/Tp;
+    [pee, fp] = periodogram(sig, [], [], Fs);
+
+    [peek, fpk] = pwelch(sig, [], [], [], Fs);
+
     % Wykresy
     figure(img);
-    subplot(3,1,1);
+    subplot(3,2,1:2);
     plot((0:N-1)*Tp, sig);
     xlabel('Czas [s]');
-    title('Sygnał e');
+    title('Sygnał');
 
-    subplot(3,1,2);
-    stem(f, S_per);
+    subplot(3,2,3);
+    stem(fp, pee);
     xlabel('Częstotliwość [Hz]');
     ylabel('Gęstość widmowa mocy');
     title('Periodogram');
 
-    subplot(3,1,3);
+    subplot(3,2,4);
+    stem(fpk, peek);
+    xlabel('Częstotliwość [Hz]');
+    ylabel('Gęstość widmowa mocy');
+    title('Korelogram');
+
+    subplot(3,2,5);
+    %stem(S_per) % a tutaj z odbiciem sie rysuje
+    stem(f, 2*S_per(1:N/2+1)); % tutaj tez bez odbicia i mnozone x2 dlatego
+    xlabel('Częstotliwość [Hz]');
+    ylabel('Gęstość widmowa mocy');
+    title('Periodogram');
+
+    subplot(3,2,6);
     %stem(S_corr); % tutaj odbija sie okno wiec komentarz daje
-    stem(f2, S_corr(1:N)); % tutaj bez odbicia wiec elegancko
+    stem(f2, 2*S_corr(1:N)); % tutaj bez odbicia wiec elegancko
     xlabel('Częstotliwość [Hz]');
     ylabel('Gęstość widmowa mocy');
     title('Korelogram');
