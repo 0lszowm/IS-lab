@@ -101,7 +101,7 @@ niezaszumione_b = niezaszumione_sg - niezaszumione_ag*niezaszumione_tg;
 niezaszumione_t = 1:1:25;
 niezaszumione_Tv2 = ((niezaszumione_ag*niezaszumione_tg)-niezaszumione_sg)/niezaszumione_ag;
 niezaszumione_T0 = (niezaszumione_Au*niezaszumione_K)/niezaszumione_ag;
-niezaszumione_gm2s = (niezaszumione_K/(niezaszumione_Tv2*s + 1))* exp(-s*niezaszumione_T0);
+niezaszumione_gm2s = (niezaszumione_K/(niezaszumione_T0*s + 1))* exp(-s*niezaszumione_Tv2);
 niezaszumione_styczna_s = niezaszumione_ag*niezaszumione_t+niezaszumione_b;
 figure(3)
 plot(niezaszumione_styczna_s)
@@ -120,7 +120,7 @@ zaszumione_b = zaszumione_sg - zaszumione_ag*zaszumione_tg;
 zaszumione_t = 1:1:60;
 zaszumione_Tv2 = ((zaszumione_ag*zaszumione_tg)-zaszumione_sg)/zaszumione_ag;
 zaszumione_T0 = (zaszumione_Au*zaszumione_K)/zaszumione_ag;
-zaszumione_gm2s = (zaszumione_K/(zaszumione_Tv2*s + 1))* exp(-s*zaszumione_T0);
+zaszumione_gm2s = (zaszumione_K/(zaszumione_T0*s + 1))* exp(-s*zaszumione_Tv2);
 zaszumione_styczna_s = zaszumione_ag*zaszumione_t+zaszumione_b;
 figure(4)
 plot(zaszumione_styczna_s)
