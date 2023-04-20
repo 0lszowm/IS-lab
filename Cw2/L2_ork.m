@@ -1,13 +1,15 @@
 %% dyskretne - pamietac nalezy zeby przejebac switcha na dolna pozycje w simulinku
+%% należy pamietac zeby zmienic koniec symulacji na tend
 % ten kod należy odpalac sekcjami (ctrl+enter i kursor w odpowiedniej sekcji)
 % tylko ostrzegam, bo inaczej nie zadziała
 close all; clear; clc;
 set_param('AKident/Manual Switch', 'sw', '0');
-% jak kod sie bedzie wypierdalac to nalezy odpalic simulinka a dokladnie
-% ten plik xd
+% jak kod sie bedzie wypierdalac to nalezy odpalic simulinka a dokladnie ten plik xd
+% wazne to jest a i nalezy wpisac do tego pliku u gory w czas symulacji zmienna tend albo na sztywno 500
 % druga kropka
-% to należy odpalic przed uruchomieniem symulacji w tym pliku w simulinku
+% to należy odpalic przed uruchomieniem symulacji w tym pliku w simulinku, juz nie trzeba jak cos
 % inaczej tam bedzie sie simulink pluł o brak tych parametrow
+
 
 Tp = 1; %% yo jest w sekundach
 N = 1001;
@@ -69,17 +71,17 @@ for i = 1:M
     gM_hat_v2_dysk(i, 1) = ryu_hat_dysk(i)/ruu_hat_dysk(1);
 end
 figure(3)
-plot(1:M, gM_hat_v1_dysk, 'b');
+stem(1:M, gM_hat_v1_dysk, 'b');
 hold on
 plot(1:M, gM_hat_v2_dysk, 'r');
-legend('gM hat v1 dyskretne','gM hat v2 dyskretne' )
+legend('gM hat v1 dyskretne','gM hat v2 dyskretne')
 
 %% ciagle - pamietac nalezy zeby przejebac switcha na gorna pozycje w simulinku
 
 set_param('AKident/Manual Switch', 'sw', '1');
 Tp = 1; %% yo jest w sekundach
 N = 1001;
-sigma2v = 0.1;
+sigma2v = 0.001;
 tend = 500; %% w sekundach to tez musi byc 
 % to co jest wyzej mozna zmienic dowolnie (chyba)
 
@@ -95,9 +97,9 @@ title("To jest obiekt odpowiedz obiektu ciaglego") %% tu wpisać co na tym wykre
 
 % trzecie polecenie
 % Analiza korelacyjna
-u_ciag = Zdata_dysk(:,1);
-y_ciag = Zdata_dysk(:,2);
-t_ciag = Zdata_dysk(:,3);
+u_ciag = Zdata_ciag(:,1);
+y_ciag = Zdata_ciag(:,2);
+t_ciag = Zdata_ciag(:,3);
 M = 50;
 tau = 0:1:M-1;
 % deklaracja macierzy korelacyjnych
@@ -137,8 +139,14 @@ legend('gM hat v1 ciagle','gM hat v2 ciagle' )
 h_M_hat = zeros(M+1, 1);
 
 for n = 1:M 
-    h_M_hat(n+1, 1) = Tp*sum(gM_hat_v2_ciag(1:n));
+    h_M_hat(n+1, 1) = Tp*sum(gM_hat_v1_ciag(1:n));
 end
 
 figure(14)
+system = tf(0.5, [5 11 7 1]);
 plot(h_M_hat)
+hold on
+[y_step, ~]=step(system);
+t_step = linspace(0,  M, 460);
+plot(t_step, y_step) % tutaj ten obiekt sie plotuje zeby porownac
+% wszystko jest raczej dobrze z tym bo jak pokazalismy to powiedziala ze ok
