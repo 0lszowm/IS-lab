@@ -76,7 +76,7 @@ p1=PN_LS1;
 
 for i=1:step:length(y1)
     y1_hat(i,:)=(p1(1) + p1(2)/u1(i) + p1(3)/u1(i)^2 + p1(4)/u1(i)^3);
-    E1(i) = y0(i) - y0_hat(i);
+    E1(i) = y1(i) - y1_hat(i);
 end
 var1=1/(step-dp)*sum(E1.^2);
 cov1=var1^2*(phi1'*phi1)^-1;
