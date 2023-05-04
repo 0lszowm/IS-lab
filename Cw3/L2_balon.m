@@ -90,7 +90,7 @@ y_niezakl = lsim(G_o, u_bialeWer, t_wer);
 
 figure(3)
 plot(y_bialeWer, color="#000000")
-title("+ Zakłócenie biale Zb.Wer")
+title("+ Zakłócenie biale Zb.Wer Metoda LS")
 hold on
 plot(y_niezakl, color="#006BB6")
 hold on
@@ -102,7 +102,7 @@ legend("Dane pomiarowe", "Niezakłócona odpowiedz(niedostępna!)" ,"Predyktor J
 
 figure(4)
 plot(y_colorWer, color="#000000")
-title("+ Zakłócenie korolowe Zb.Wer")
+title("+ Zakłócenie korolowe Zb.Wer Metoda LS")
 hold on
 plot(y_niezakl, color="#006BB6")
 hold on
@@ -131,5 +131,34 @@ przedzial_biale_2=[ans_d(2) ans_g(2)];
 
 
 %% druga czesc tu bedzie a moze juz jest (chodzi o ta 2.2)
-load("IdentWsadowaDyn.mat")
 % dobra kiedys nalezy to dokonczyc
+for i=2:1:length(y_est_color)
+    phi_color_ulepszone(i,:)=[y_est_color(i-1) u_colorWer(i-1)];
+end
+PN_LS_color_ulepszone=pinv(phi_color_ulepszone)*y_est_color;
+p_color_ulepszone=PN_LS_color_ulepszone;
+kp_color_ulepszone = p_color_ulepszone(2)/(1-p_color_ulepszone(1)); % tutaj to dzielenie przez to 1-p_color dalem
+% bo inaczej wynik estymacji trzeba bylo losowo x50 dac xd(linijka 81)
+T_color_ulepszone = -Tp/log(p_color_ulepszone(1)); % to samo co kilka linijek wyzej
+
+
+G_est_color_ulepszone = (kp_color_ulepszone*(1-exp(-Tp/T_color_ulepszone)))/(z-exp(-Tp/T_color_ulepszone));
+y_est_color_ulepszone = lsim(G_est_color_ulepszone, u_colorWer); % albo to trzeba pomnozyc razy 50 albo zostawic jak jest 65 linijke xd
+% to nizej co jest y_m napisala na tablicy nie dokonca wiem co to jest ale
+% napisala jak sie liczy i przejebalem to
+y_m = [];
+y_m(1) = 0;
+y_nn1(1) = 0;
+for n=2:length(u_colorWer)
+    y_m(n) = G_est_color_ulepszone.Numerator{1,1}(end)*u_colorWer(n-1)+exp(-Tp/T_color_ulepszone)*y_m(n-1);
+    y_nn1(n) = G_est_color_ulepszone.Numerator{1,1}(end)*u_colorWer(n-1)+exp(-Tp/T_color_ulepszone)*y_colorWer(n-1);
+end
+
+figure(5)
+plot(y_colorWer, color="#000000")
+title("+ Zakłócenie korolowe Zb.Wer metoda IV")
+hold on
+plot(y_est_color_ulepszone, color="#F58426")
+plot(y_m, color="#BEC0C2")
+plot(y_nn1, color="#006BB6")
+legend("Dane pomiarowe", "Identyfikacja", "y_m", "y_n/n-1", location="best")
