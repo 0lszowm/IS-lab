@@ -30,16 +30,16 @@ title("Wyjscie obiektu+zakłócenie color")
 
 % tutaj nizej dziela sie te dane na podzbiory po 2000 i 2001 probek
 u_bialeEst = u_biale(1:2000);
-u_bialeWer = u_biale(2001:4001);
+u_bialeWer = u_biale(2001:4000);
 
 y_bialeEst = y_biale(1:2000);
-y_bialeWer = y_biale(2001:4001);
+y_bialeWer = y_biale(2001:4000);
 
 u_colorEst = u_color(1:2000);
-u_colorWer = u_color(2001:4001);
+u_colorWer = u_color(2001:4000);
 
 y_colorEst = y_color(1:2000);
-y_colorWer = y_color(2001:4001);
+y_colorWer = y_color(2001:4000);
 
 phi_biale = [];
 for i=2:1:length(y_bialeEst)
@@ -78,7 +78,8 @@ z = tf('z', Tp);
 G_est_biale = (kp_biale*(1-exp(-Tp/T_biale)))/(z-exp(-Tp/T_biale)) ;
 y_est_biale = lsim(G_est_biale, u_bialeWer); % albo to trzeba pomnozyc razy 50 albo zostawic jak jest 59 linijke xd
 G_est_color = (kp_color*(1-exp(-Tp/T_color)))/(z-exp(-Tp/T_color));
-y_est_color = lsim(G_est_color, u_colorWer); % albo to trzeba pomnozyc razy 50 albo zostawic jak jest 65 linijke xd
+y_est_color_wer = lsim(G_est_color, u_colorWer); % albo to trzeba pomnozyc razy 50 albo zostawic jak jest 65 linijke xd
+y_est_color_est = lsim(G_est_color, u_colorEst);
 % tutaj nizej liczy sie w praktyce niedostepna! odpowiedz systemu xd
 s = tf('s');
 k0 = 2;
@@ -108,7 +109,7 @@ plot(y_niezakl, color="#006BB6")
 hold on
 plot(y_pred_color, color="#BEC0C2")
 hold on
-plot(y_est_color, color="#F58426")
+plot(y_est_color_wer, color="#F58426")
 legend("Dane pomiarowe", "Niezakłócona odpowiedz(niedostępna!)" ,"Predyktor Jednokrokowy", "Identyfikacja", location="best")
 
 % Ocena identyfikacji tutaj liczy sie
@@ -117,7 +118,7 @@ Vp_biale=1/Nv*sum((y_bialeWer'-y_pred_biale).^2);
 Vm_biale=1/Nv*sum((y_niezakl-y_est_biale).^2);
 Nv=length(y_colorWer);
 Vp_color=1/Nv*sum((y_colorWer'-y_pred_color).^2);
-Vm_color=1/Nv*sum((y_niezakl-y_est_color).^2);
+Vm_color=1/Nv*sum((y_niezakl-y_est_color_wer).^2);
 
 % przedzial ufnosci nizej sie liczy, dokladnie tak samo jak w pierwszych
 % na zajeciach wczesniej, wiec powinno byc git
@@ -132,15 +133,14 @@ przedzial_biale_2=[ans_d(2) ans_g(2)];
 
 %% druga czesc tu bedzie a moze juz jest (chodzi o ta 2.2)
 % dobra kiedys nalezy to dokonczyc
-for i=2:1:length(y_est_color)
-    phi_color_ulepszone(i,:)=[y_est_color(i-1) u_colorWer(i-1)];
+for i=2:1:length(y_est_color_est)
+    Z(i,:)=[y_est_color_est(i-1) u_colorEst(i-1)]; % to jest to Z z instrukcji
 end
-PN_LS_color_ulepszone=pinv(phi_color_ulepszone)*y_est_color;
-p_color_ulepszone=PN_LS_color_ulepszone;
+PN_IV_color=(Z'*phi_color)^(-1)*Z'*y_colorEst;
+p_color_ulepszone=PN_IV_color; % ulepszone bo liczone ponownie druga metoda;
 kp_color_ulepszone = p_color_ulepszone(2)/(1-p_color_ulepszone(1)); % tutaj to dzielenie przez to 1-p_color dalem
 % bo inaczej wynik estymacji trzeba bylo losowo x50 dac xd(linijka 81)
 T_color_ulepszone = -Tp/log(p_color_ulepszone(1)); % to samo co kilka linijek wyzej
-
 
 G_est_color_ulepszone = (kp_color_ulepszone*(1-exp(-Tp/T_color_ulepszone)))/(z-exp(-Tp/T_color_ulepszone));
 y_est_color_ulepszone = lsim(G_est_color_ulepszone, u_colorWer); % albo to trzeba pomnozyc razy 50 albo zostawic jak jest 65 linijke xd
@@ -159,6 +159,6 @@ plot(y_colorWer, color="#000000")
 title("+ Zakłócenie korolowe Zb.Wer metoda IV")
 hold on
 plot(y_est_color_ulepszone, color="#F58426")
-plot(y_m, color="#BEC0C2")
+plot(y_m, LineStyle="--", color="#BEC0C2")
 plot(y_nn1, color="#006BB6")
 legend("Dane pomiarowe", "Identyfikacja", "y_m", "y_n/n-1", location="best")
