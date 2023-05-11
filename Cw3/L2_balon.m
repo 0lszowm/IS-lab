@@ -153,6 +153,8 @@ for n=2:length(u_colorWer)
     y_m(n) = G_est_color_ulepszone.Numerator{1,1}(end)*u_colorWer(n-1)+exp(-Tp/T_color_ulepszone)*y_m(n-1);
     y_nn1(n) = G_est_color_ulepszone.Numerator{1,1}(end)*u_colorWer(n-1)+exp(-Tp/T_color_ulepszone)*y_colorWer(n-1);
 end
+Vp_color_ulepszone=1/Nv*sum((y_pred_color-y_nn1).^2);
+Vm_color_ulepszone=1/Nv*sum((y_niezakl-y_est_color_ulepszone).^2);
 
 figure(5)
 plot(y_colorWer, color="#000000")
