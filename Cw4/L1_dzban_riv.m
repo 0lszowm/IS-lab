@@ -1,4 +1,4 @@
-function out = L1_dzban_iv(we)
+function out = L1_dzban_riv(we)
 
 global pd_iv
 global P_iv
