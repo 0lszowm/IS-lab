@@ -29,15 +29,15 @@ k=P*si;
 epsilon=y-phi'*pd1;
 pd=pd1+k*epsilon;
 
-% % to jest do tego co w ostatniej kropce jest
-% V=diag([1,1,1])*10^-4;
-% epsilon_max=0.3;
-% P_min=20;
-% Pp=P+V;
-% k=Pp*phi*pinv(1+phi'*Pp*phi);
-% P=Pp-k*phi'*Pp;
-% epsilon=y-phi'*pd;
-% pd=pd+k*epsilon;
+% to jest do tego co w ostatniej kropce jest
+V=diag([1,1,1])*10^-4;
+epsilon_max=0.5;
+P_min=20;
+Pp=P+V;
+k=Pp*phi*pinv(1+phi'*Pp*phi);
+P=Pp-k*phi'*Pp;
+epsilon=y-phi'*pd;
+pd=pd+k*epsilon;
 
 
 yd2=yd1;
@@ -46,9 +46,9 @@ phi_d=[-yd1 -yd2 u2];
 yd=phi_d*pd;
 yd1=yd;
 
-% if(abs(epsilon)>epsilon_max|(trace(P)<P_min))
-%     P=[1 0 0; 0 1 0;0 0 1];
-% end
+if(abs(epsilon)>epsilon_max|(trace(P)<P_min))
+    P=[1 0 0; 0 1 0;0 0 1];
+end
 
 
 

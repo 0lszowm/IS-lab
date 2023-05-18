@@ -7,7 +7,7 @@ Td = 500;
 c1o=0;
 
 global lambda
-lambda=0.98; % ten wspolczynnik nalezy przyjac tak aby był w przedziale 0.98-0.999 
+lambda=0.5; % ten wspolczynnik nalezy przyjac tak aby był w przedziale 0.98-0.999 
 % albo 0-1 sam juz kurwa nie wiem bo w poleceniach źle to opisane jest/
 
 global pd

@@ -4,7 +4,7 @@ clear, close all, clc;
 Tp=0.05;
 tend=1000;
 sigma2e=0.1;
-Tf=8*Tp;
+Tf=2*Tp;
 global pd 
 global P
 global yd1 

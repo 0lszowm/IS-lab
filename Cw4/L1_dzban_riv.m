@@ -10,20 +10,23 @@ global xd1
 global xd2
 global z
 
-y=we(1);
-y1=we(2);
-y2=we(3);
+xd=we(1);
+xd1=we(2);
+xd2=we(3);
 u=we(4);
 u2=we(5);
+y = we(6);
+y1 = we(7);
+y2 = we(8);
 
 phi=[-y1 -y2 u2];
 phi=phi';
 
-xd2=xd1;
+%xd2=xd1;
 phi_d=[-xd1 -xd2 u2];
 
-xd=phi_d*pd_iv;
-xd1=xd;
+%xd=phi_d*pd_iv;
+%xd1=xd;
 
 z=[-xd1 -xd2 u2];
 z=z';
@@ -45,4 +48,5 @@ ydp=phi_dp*pd_iv;
 out(1) = yd;
 out(2) = ydp;
 out(3)=pd_iv(3);
+out(4) = trace(P_iv);
 end
