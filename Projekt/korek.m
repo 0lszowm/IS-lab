@@ -16,10 +16,6 @@ Gz = simplify(Gz)
 % Celem modelowania jest Uzyskanie symulatora wyjaśniającego odpowiedź systemu na poziomie J_FIT>90%.
 load dane.mat
 data = iddata(out, in, 0.1);
-figure(1111)
-plot(in)
-hold on;
-plot(out)
 tp = 0.1;
 
 
@@ -41,11 +37,11 @@ step=1;
 
 figure(1)
 subplot(2,1,1)
-plot(u, 'green')
+plot(u, color="#006BB6")
 title("Wejscie obiektu")
 subplot(2,1,2)
-plot(y, color="#4DBEEE")
-title("Wyjscie obiektu+zakłócenie biale")
+plot(y, color="#F58426")
+title("Wyjscie obiektu")
 %%
 % tutaj nizej dziela sie te dane na podzbiory po 200 probek
 u_Est = u(1:N/2);
@@ -81,13 +77,14 @@ s = tf('s');
 G_est = kp/(T*s+1);
 t = 0:tp:tp*(length(u_Est)-1);
 G_est
+c2d(G_est, Tp)
 y_est = lsim(G_est, u_Wer, t); % albo to trzeba pomnozyc razy 50 albo zostawic jak jest 59 linijke xd
 t_wer = 0:Tp:(length(y_Wer)-1)*Tp;
 % tutaj konczy sie liczyc w praktyce niedostepna! odpowiedz systemu xd
 
 figure(4)
-plot(y_Wer, color="#000000")
-title("Zb.Wer Metoda LS")
+plot(y_Wer, color="#006BB6")
+title("Zb.Wer Metoda LS I rząd")
 hold on
 % plot(y_pred_biale, color="#BEC0C2")
 % hold on
@@ -99,7 +96,7 @@ legend("Dane pomiarowe", "Identyfikacja", location="best")
 % Ocena identyfikacji tutaj liczy sie
 Nv=length(y_Wer);
 Vp=1/Nv*sum((y_Wer'-y_pred).^2);
-Vp
+Vp;
 % przedzial ufnosci nizej sie liczy, dokladnie tak samo jak w pierwszych
 % na zajeciach wczesniej, wiec powinno byc git
 cov0=Vp^2*(phi'*phi)^-1;
@@ -126,6 +123,7 @@ kp_ulepszone = p_ulepszone(2)/(1-p_ulepszone(1)); % tutaj to dzielenie przez to 
 T_ulepszone = -Tp/log(p_ulepszone(1)); % to samo co kilka linijek wyzej
 G_est_ulepszone = kp_ulepszone/(T_ulepszone*s+1);
 G_est_ulepszone
+c2d(G_est_ulepszone, Tp)
 t = 0:tp:tp*(length(u_Est)-1);
 %y_est = lsim(G_est, u_Wer, t); % albo to trzeba pomnozyc razy 50 albo zostawic jak jest 59 linijke xd
 %G_est_ulepszone = (kp_ulepszone*(1-exp(-Tp/T_ulepszone)))/(z-exp(-Tp/T_ulepszone));
@@ -134,7 +132,7 @@ y_est_ulepszone = lsim(G_est_ulepszone, u_Wer, t);
 % Ocena identyfikacji tutaj liczy sie
 Nv=length(y_Wer);
 Vp=1/Nv*sum((y_Wer'-y_pred).^2);
-Vp
+Vp;
 % przedzial ufnosci nizej sie liczy, dokladnie tak samo jak w pierwszych
 % na zajeciach wczesniej, wiec powinno byc git
 cov0=Vp^2*(Z'*Z)^-1;
@@ -146,8 +144,8 @@ przedzial1=[ans_d(1) ans_g(1)];
 przedzial2=[ans_d(2) ans_g(2)];
 
 figure(5)
-plot(y_Wer, color="#000000")
-title("Zb.Wer metoda IV")
+plot(y_Wer, color="#006BB6")
+title("Zb.Wer metoda IV I rząd")
 hold on
 plot(y_est_ulepszone, color="#F58426")
 legend("Dane pomiarowe", "Identyfikacja", location="best")

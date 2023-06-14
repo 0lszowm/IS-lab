@@ -56,7 +56,7 @@ y_Est = y(1:N/2);
 y_Wer = y(N/2+1:N);
 %% dla testu tu LS second order
 disp('---------------------------------------------')
-disp('Metoda LS test')
+disp('Metoda LS 2 rzad')
 phi = [];
 for i=3:1:length(y_Est) % Modify the loop to start from 3 instead of 2
     phi(i,:)=[y_Est(i-1) y_Est(i-2) u_Est(i-1) u_Est(i-2)]; % Modify phi matrix to include two previous y and u values
@@ -71,8 +71,12 @@ Td = -Tp / log(p(1)); % Calculate Td using the appropriate element of p
 
 % Create the transfer function
 s = tf('s');
+kp_t
+T
+Td
 G_est_secondOrder = kp_t / ((T*s + 1) * (Td*s + 1));
 G_est_secondOrder
+c2d(G_est_secondOrder, Tp)
 
 t = 0:tp:tp*(length(u_Wer)-1);
 y_est = lsim(G_est_secondOrder, u_Wer, t);
@@ -94,8 +98,8 @@ przedzial3=[ans_d(1) ans_g(1)];
 przedzial4=[ans_d(2) ans_g(2)];
 
 figure(2)
-plot(y_Wer, color="#000000")
-title("Zb.Wer Metoda LS Second Order")
+plot(y_Wer, color="#006BB6")
+title("Zb.Wer Metoda LS II rząd")
 hold on
 plot(y_est, color="#F58426")
 hold on
@@ -107,7 +111,7 @@ legend("Dane pomiarowe", "Identyfikacja", location="best")
 
 %% Dla testu jest tu IV second order
 disp('---------------------------------------------')
-disp('Metoda IV')
+disp('Metoda IV 2 rzad')
 Z = [];
 for i = 3:length(y_est)
     Z(i,:) = [y_est(i-1) y_est(i-2) u_Est(i-1) u_Est(i-2)];
@@ -120,15 +124,19 @@ kp_t = (p_ulepszone(4)-p_ulepszone(3))/(1 - p_ulepszone(1)); % Correct calculati
 T = -Tp / p_ulepszone(2); % Calculate T using the appropriate element of p
 Td = Tp / p_ulepszone(1); % Calculate Td using the appropriate element of p
 s = tf('s');
+kp_t
+T
+Td
 G_est_secondOrder = kp_t / ((T*s + 1) * (Td*s + 1));
 G_est_secondOrder
+c2d(G_est_secondOrder, Tp)
 
 t = 0:tp:tp*(length(u_Wer)-1);
 y_est_ulepszone= lsim(G_est_secondOrder, u_Wer, t);
 
 figure(3)
-plot(y_Wer, color="#000000")
-title("Zb.Wer metoda IV Second Order")
+plot(y_Wer, color="#006BB6")
+title("Zb.Wer metoda IV II rząd")
 hold on
 plot(y_est_ulepszone, color="#F58426")
 legend("Dane pomiarowe", "Identyfikacja", location="best")
@@ -156,13 +164,30 @@ disp('Matlabowa funkcja tfest()')
 np = 1;
 t = 0:tp:tp*(length(u_Est)-1);
 sys = tfest(u_Est, y_Est, np, 'Ts', tp);
+sys
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 out_2 = lsim(sys, u_Wer, t);
 figure(2222)
-plot(out_2)
+plot(out_2, color="#006BB6")
 hold on;
-title("Zb.Wer tfest()")
-plot(y_Wer)
+title("Zb.Wer tfest() 1 rząd")
+plot(y_Wer, color="#F58426")
+[Jfit] = calculateFitMetrics(y_Wer, out_2);
+
+%% A tu sie liczy gotowa funkcja matlabowa tfest()
+disp('---------------------------------------------')
+disp('Matlabowa funkcja tfest() 2 rząd')
+np = 2;
+t = 0:tp:tp*(length(u_Est)-1);
+sys = tfest(u_Est, y_Est, np, 'Ts', tp);
+sys
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+out_2 = lsim(sys, u_Wer, t);
+figure(2223)
+plot(out_2, color="#006BB6")
+hold on;
+title("Zb.Wer tfest() 2 rząd")
+plot(y_Wer, color="#F58426")
 [Jfit] = calculateFitMetrics(y_Wer, out_2);
 %% tutaj tym wbudowanym sprobowac mozna xddd
 %systemIdentification
